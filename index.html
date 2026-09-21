@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>For YZN</title>
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Alexandria:wght@300;400;500;600&family=Great+Vibes&family=Tajawal:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+  /* ---------- COLOR PALETTE ---------- */
+  :root {
+    --ink:        #2d1236;   /* Rich deep plum for primary text */
+    --pink:       #e6287f;   /* Radiant pink for buttons & accents */
+    --rose-glow:  #ff85b3;   /* Soft glow for borders & cursors */
+    --accent:     #ab1a5f;   /* Elegant dark rose for secondary text */
+    --card-bg:    rgba(255, 255, 255, 0.78); /* High contrast glass backdrop */
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: auto; }
+
+  body {
+    background: linear-gradient(155deg, #ffe0f0 0%, #ede0ff 50%, #d8f0ff 100%) fixed;
+    color: var(--ink);
+    font-family: 'Tajawal', 'Alexandria', -apple-system, sans-serif;
+    font-size: 1.2rem;
+    line-height: 2.2;
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ---------- LAYERS ---------- */
+  #petals, #bloom {
+    position: fixed; inset: 0; width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  #petals { z-index: 1; }
+  #bloom  { z-index: 50; }
+
+  /* ---------- PAGES ---------- */
+  .page {
+    position: relative;
+    z-index: 2;
+    display: none;
+    min-height: 100vh;
+    min-height: 100dvh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 3rem 1.5rem;
+  }
+  .page.active { display: flex; }
+
+  /* ---------- ELEGANT BUTTONS ---------- */
+  .btn {
+    margin-top: 2rem;
+    padding: 1rem 2.6rem;
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: #fff;
+    background: linear-gradient(135deg, #ff3b96 0%, #e6287f 100%);
+    border: none;
+    border-radius: 999px;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(230, 40, 127, 0.35);
+    transition: opacity 0.8s ease, transform 0.3s, box-shadow 0.3s, background 0.3s;
+  }
+  .btn.hidden-btn {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(12px);
+  }
+  .btn.show-btn {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+  }
+  .btn:hover {
+    background: linear-gradient(135deg, #ff54a4 0%, #f7318a 100%);
+    transform: translateY(-2px) scale(1.03);
+    box-shadow: 0 14px 32px rgba(230, 40, 127, 0.45);
+  }
+  .btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ---------- PAGE 0: PASSCODE CALENDAR ---------- */
+  .passcode-box {
+    background: var(--card-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    padding: 3rem 2.2rem;
+    border-radius: 2.5rem;
+    box-shadow: 0 20px 45px rgba(230, 40, 127, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+    max-width: 420px;
+    width: 100%;
+    border: 1.5px solid rgba(255, 200, 225, 0.8);
+  }
+  .passcode-box h2 {
+    font-family: 'Great Vibes', cursive;
+    font-size: 3.2rem;
+    color: var(--pink);
+    margin-bottom: 0.3rem;
+    text-shadow: 0 2px 10px rgba(230, 40, 127, 0.15);
+  }
+  .passcode-box p {
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin-bottom: 1.8rem;
+    font-weight: 500;
+  }
+  .date-input-group {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .date-select {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 500;
+    padding: 0.7rem 1.1rem;
+    border-radius: 16px;
+    border: 2px solid #ffcae6;
+    background: #fff;
+    color: var(--ink);
+    outline: none;
+    cursor: pointer;
+    transition: all 0.3s;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+  }
+  .date-select:focus {
+    border-color: var(--pink);
+    box-shadow: 0 0 0 4px rgba(230, 40, 127, 0.15);
+  }
+  #errorMsg {
+    color: var(--pink);
+    font-size: 1rem;
+    min-height: 1.5rem;
+    margin-top: 0.6rem;
+    font-weight: 600;
+  }
+
+  /* ---------- PAGE 1: HERO ---------- */
+  .hero .small {
+    font-family: 'Alexandria', sans-serif;
+    font-weight: 300;
+    font-size: 1.25rem;
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    opacity: 0; animation: rise 1.8s ease 0.6s forwards;
+  }
+  .hero h1 {
+    font-family: 'Great Vibes', cursive;
+    font-weight: 400;
+    font-size: clamp(4.5rem, 18vw, 10rem);
+    line-height: 1;
+    margin: 0.5rem 0 1.2rem;
+    color: var(--pink);
+    text-shadow: 0 8px 30px rgba(230, 40, 127, 0.25), 0 0 60px rgba(255, 255, 255, 0.9);
+    opacity: 0; animation: rise 2.2s ease 1.4s forwards;
+  }
+  .hero .sub {
+    font-size: 1.3rem;
+    font-weight: 500;
+    max-width: 35ch;
+    color: var(--ink);
+    opacity: 0; animation: rise 2s ease 2.4s forwards;
+  }
+  .hero .btn { opacity: 0; animation: rise 2s ease 3.2s forwards; }
+
+  /* ---------- PAGE TEXT CONTAINERS (TYPOGRAPHY STYLES) ---------- */
+  .page-text-container {
+    max-width: 44rem;
+    width: 100%;
+    text-align: right;
+    background: var(--card-bg);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    padding: 3rem 2.4rem;
+    border-radius: 2.5rem;
+    box-shadow: 0 20px 50px rgba(180, 50, 120, 0.12), inset 0 0 0 1px rgba(255, 255, 255, 0.9);
+    border: 1.5px solid rgba(255, 190, 220, 0.6);
+    margin: 1.5rem 0;
+    min-height: 220px;
+    position: relative;
+  }
+
+  .page-text-container p {
+    font-family: 'Tajawal', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 500;
+    line-height: 2.3;
+    color: var(--ink);
+    white-space: pre-wrap;
+    display: inline;
+    letter-spacing: 0.01em;
+  }
+
+  /* ---------- GLOWING PULSING CURSOR ---------- */
+  .cursor {
+    display: inline-block;
+    width: 4px;
+    height: 1.3em;
+    background: var(--pink);
+    border-radius: 4px;
+    margin-right: 6px;
+    vertical-align: text-bottom;
+    box-shadow: 0 0 12px var(--rose-glow);
+    animation: pulseCursor 0.8s ease-in-out infinite alternate;
+  }
+  @keyframes pulseCursor {
+    0%   { opacity: 1; transform: scaleY(1); }
+    100% { opacity: 0.2; transform: scaleY(0.85); }
+  }
+
+  /* ---------- REDUCED MOTION SUPPORT ---------- */
+  @media (prefers-reduced-motion: reduce) {
+    .hero .small, .hero h1, .hero .sub, .hero .btn { animation: none; opacity: 1; }
+  }
+</style>
+</head>
+
+<body>
+
+<canvas id="petals" aria-hidden="true"></canvas>
+<canvas id="bloom" aria-hidden="true"></canvas>
+
+<!-- ============ PAGE 0: CALENDAR PASSCODE ============ -->
+<main class="page active" id="pagePasscode">
+  <div class="passcode-box">
+    <h2>Our 10th Anniversary</h2>
+    <p>اخترِ التاريخ المميز الذي بدأ فيه كل شيء (الشهر / اليوم)</p>
+    <div class="date-input-group">
+      <select id="monthSelect" class="date-select">
+        <option value="" disabled selected>الشهر</option>
+        <option value="1">يناير (1)</option>
+        <option value="2">فبراير (2)</option>
+        <option value="3">مارس (3)</option>
+        <option value="4">أبريل (4)</option>
+        <option value="5">مايو (5)</option>
+        <option value="6">يونيو (6)</option>
+        <option value="7">يوليو (7)</option>
+        <option value="8">أغسطس (8)</option>
+        <option value="9">سبتمبر (9)</option>
+        <option value="10">أكتوبر (10)</option>
+        <option value="11">نوفمبر (11)</option>
+        <option value="12">ديسمبر (12)</option>
+      </select>
+      <select id="daySelect" class="date-select">
+        <option value="" disabled selected>اليوم</option>
+        <script>
+          for(let d=1; d<=31; d++) {
+            document.write(`<option value="${d}">${d}</option>`);
+          }
+        </script>
+      </select>
+    </div>
+    <button class="btn show-btn" id="unlockBtn" style="margin-top: 1rem; width: 100%;">دخول</button>
+    <div id="errorMsg"></div>
+  </div>
+</main>
+
+<!-- ============ PAGE 1: HERO ============ -->
+<section class="page hero" id="pageHero">
+  <p class="small">Our 10th anniversary & ngl my best 10 months in my life</p>
+  <h1 id="herName">YZN</h1>
+  <p class="sub">اضغطي بالأسفل لفتح رسالتك الخاصة اليوم ✨</p>
+  <button class="btn show-btn" id="openBtn">Open your letter</button>
+</section>
+
+<!-- ============ PAGE 2: PART 1 ============ -->
+<section class="page" id="pagePart1">
+  <div class="page-text-container">
+    <p id="textPart1"></p><span class="cursor" id="cursor1"></span>
+  </div>
+  <button class="btn hidden-btn" id="nextBtn1">إلى الصفحة التالية</button>
+</section>
+
+<!-- ============ PAGE 3: PART 2 ============ -->
+<section class="page" id="pagePart2">
+  <div class="page-text-container">
+    <p id="textPart2"></p><span class="cursor" id="cursor2"></span>
+  </div>
+  <button class="btn hidden-btn" id="nextBtn2">كلمة أخيرة...</button>
+</section>
+
+<!-- ============ PAGE 4: FINAL PART ============ -->
+<section class="page" id="pageFinal">
+  <div class="page-text-container" style="border: 2px solid var(--pink);">
+    <p id="textFinal"></p><span class="cursor" id="cursorFinal"></span>
+  </div>
+  <button class="btn hidden-btn" id="againBtn">البدء من جديد</button>
+</section>
+
+
+<script>
+/* =====================================================
+   1) TEXT CONTENT
+   ===================================================== */
+const HER_NAME   = "YZN";
+
+const TEXT_1 = `hi YZN ، its our 10 month celebration 
+
+حبيبي يزن ، اليوم هوة اليوم الي عرفتج بي ، نفسة هذا اليوم الي انطاني شعور معين ، بس هذا الشعور بحياتة ماجان جايني قبل بحياتي ، ولامرة ، بهذاك اليوم من اجاني هذا شعور الشغف وشعور انو شكد عاجبني احجي وية هلشخص الكدامي ، عرفت وتيقنت انو هلشخص مو مثل غيرة من الناس العرفتهم بحياتي ، هذا الشخص انطاني شي محسيتة قبل ، جنت ماعرفج ، بس هذا شعور الدفئ شعور الحب وشعور الشغف ، شعور الواهس ، الي خلاني اطلب حسابج واني اعرف كلش زين هوة شكد خاص وشكد حساس بالنسبة الج ! خلاني اطلبة باول يوم ، مو بيدي ، مشاعري جاي تاخذني مو اني ، من اتذكر هذا الموقف وييجي ببالي باوقات صفنتي او بالاوقات الي تجين ببالي وانتي يايزن دائما ببالي ، مباشرة ييجي الشريط الطويل مال عشر اشهر بيناتنة ، واضل اتذكر حرفيا كلشي صار بيناتنة ، واضل اتذكر ضحكتج ، وسوالفج ، وشكلج ، وهواياتج ، وحرفيا كلشي بيج ، وورما يخلص هل شي ييجيني هذا شعور النعمة ، شعور الشكر من الله انو هلشخص بحياتة ماجان مثل اي شخص عرفتة بحياتي`;
+
+const TEXT_2 = `اني دائما بالانفرسري اذكر الماضي مالتنا بس هلمرة احب احجي على حاضرنا ، والشي الي احنا بي حاليا ، هل فترة خلنتفق عليها انو هية احلى فترة النا ، من كل النواحي ، يزن كل الفترات اني جنت اشتاقلج واحبج واريد اخابرج واريد نكضي وقت شكد مانكدر اكثر ، بس هل فترة الحلو بيها انو صار عدنا اني وياج هيج امكانية ، اكدر اسمع صوتج الصبح اكدر ادك عليج من اشتاق لصوتج ، اكدر اراسلج ب اي وقت بدون ماييجيني هذا الشعور مال انو احتمال دا اضغط عليهة او احتمال الوقت غلط ، لان حبيبي يزن بيناتنة مستحيل يكون اي وقت غلط حاليا ، تدرين بتوفي يكيف كلمرة يشوف بيها مكالمة من يزن؟ تدرين توفي يكيف كلمرة يزن تكلة تعال خلنتخابر او تعال خلنلعب او تعال خلنسولف ، تدرين توفي يكيف بكل مرة يزن تكعدة الصبح يروح للدوام او يخابرها من يرجع للدوام ويسولفلها على يومة ، تدرين توفي يكيف بكل مرة يزن تكلة اليوم حطلع وية ماما او حطلع وية الاهل ، لان توفي كلش يحب ونسة يزن ، وهوة اصلا يومية واحد من اهدافة انو يغيرلة من نفسيتها ، يونسها او يضحكها ، يغيرلها جو ، لان نفسية يزن هية نفسها نفسية توفي ، وكلشي ياثر عليها حيتاثرون ثنيناتهم`;
+
+const TEXT_3 = `بالنهاية احب اكلج يزن انو اني احبج ، حب صادق ، وبحياتي مقدمتة ل اي شخص بحياتي 
+يومية قبل لا انام اتمنى تكونين بجانبي ، اكدر اشتم ريحتج ، اكدر العب بشعرج ، اكدر اشبگج شبگة كلش قوية ، اتمنى ابوسج بوسات واني نعسان ، اتمنى نكدر نحشش قبل لننام ، اتمنى تخلين ايدج على شعري وتلعبين بي واني اغفة وداحس بايدج ، اتمنى اكعد من النوم واشوف وجهج كدامي ، وهل مرة البوسات مو مال واحد نعسان مال واحد هستوة كاعد ويبوس قوي  ، ونقوم اني وياج من الفراش ونروح نتريك ونبدل سوية ونتشاقة بيناتنة واكلج موحلو وهوة يخبل عليج بس لان اغار عليج ، ونطلع للحديقة اني ابجي وانتي تبجين علمود لانفترق اذا جنة منداوم بنفس المكان ، اتمنى نرجع تعبانين العصر او الضهر ونكعد نباوع وناكل او نطلع او كلشي نسوي
+واذا لاحظتي يا يزن كل هل امنيات بيهن ربط واحد بس ، الي هوة انتي موجودة بحياتي
+شكد هل احلام الي حجيتها فوك ممكن تاخذ وقت ، اني راح اضل ثابت بمكاني ، راح اضل انتظر ، لحد ماكلشي كلتة وكلشي موجود بدماغي وكلشي موجود بدماغج ، فد يوم من الايام الجاية راح يتحقق وراح نعيش احلى حياة بهل دنيا
+شكرا يزن لان انتي حاليا احلى شي بحياة توفي
+وللابد
+راح اضل احبچ وراح اضل اتمناچ واسعالچ بكلشي عندي بحياتي`;
+
+document.getElementById("herName").textContent = HER_NAME;
+document.title = "For " + HER_NAME;
+
+
+/* =====================================================
+   2) SLOW & NATURAL TYPEWRITER LOGIC
+   ===================================================== */
+let activeTypeToken = 0;
+
+function startTypewriter(elementId, cursorId, btnId, fullText, speed = 65) {
+  const el = document.getElementById(elementId);
+  const cursor = document.getElementById(cursorId);
+  const btn = document.getElementById(btnId);
+  
+  if (!el) return;
+  
+  activeTypeToken++;
+  const currentToken = activeTypeToken;
+  
+  el.textContent = "";
+  if (cursor) cursor.style.display = "inline-block";
+  if (btn) {
+    btn.classList.remove("show-btn");
+    btn.classList.add("hidden-btn");
+  }
+
+  let i = 0;
+  
+  function tick() {
+    if (currentToken !== activeTypeToken) return;
+    
+    el.textContent = fullText.slice(0, i);
+    i++;
+    
+    if (i <= fullText.length) {
+      const char = fullText[i - 1];
+      let delay = speed;
+      // Pause on punctuation for a natural reading flow (~350ms pause)
+      if (["،", "؛", ".", "!", "؟", "\n"].includes(char)) {
+        delay = speed * 5.5;
+      }
+      setTimeout(tick, delay);
+    } else {
+      if (cursor) cursor.style.display = "none";
+      if (btn) {
+        btn.classList.remove("hidden-btn");
+        btn.classList.add("show-btn");
+      }
+    }
+  }
+  
+  setTimeout(tick, 400);
+}
+
+
+/* =====================================================
+   3) CANVAS SETUP
+   ===================================================== */
+const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const petalCanvas  = document.getElementById("petals");
+const bloomCanvas  = document.getElementById("bloom");
+const ctx  = petalCanvas.getContext("2d");
+const bctx = bloomCanvas.getContext("2d");
+
+let W, H, dpr;
+function resize() {
+  dpr = window.devicePixelRatio || 1;
+  W = window.innerWidth;
+  H = window.innerHeight;
+  [petalCanvas, bloomCanvas].forEach(c => { c.width = W * dpr; c.height = H * dpr; });
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  bctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+resize();
+window.addEventListener("resize", resize);
+
+const clamp = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const easeOutBack  = t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); };
+const easeOutCubic = t => 1 - Math.pow(1 - t, 3);
+const easeInCubic  = t => t * t * t;
+const rand = (a, b) => a + Math.random() * (b - a);
+
+
+/* =====================================================
+   4) COLOR PAIRS & FLOWER TYPES
+   ===================================================== */
+const PAIRS = [
+  { a: "#ff5d73", b: "#ff9aa8" },
+  { a: "#ff3d9a", b: "#ff8cc6" },
+  { a: "#ffc531", b: "#ffe27a" },
+  { a: "#ff8a2b", b: "#ffbb7a" },
+  { a: "#3bb8f5", b: "#8fd8ff" },
+  { a: "#a86bff", b: "#cfb0ff" },
+  { a: "#3ed8a0", b: "#95efcc" }
+];
+const TYPES = ["round", "round", "round", "daisy", "daisy", "tulip", "tulip", "sunflower"];
+const pickPair = () => PAIRS[Math.floor(Math.random() * PAIRS.length)];
+const pickType = () => TYPES[Math.floor(Math.random() * TYPES.length)];
+
+
+/* =====================================================
+   5) DRAW BLOOM
+   ===================================================== */
+function drawBloom(x, y, R, rot, alpha, type, pair) {
+  if (R < 0.5 || alpha <= 0) return;
+  bctx.save();
+  bctx.translate(x, y);
+  bctx.rotate(type === "tulip" ? rot * 0.12 : rot);
+  bctx.globalAlpha = alpha;
+  bctx.lineWidth = 1;
+  bctx.strokeStyle = "rgba(90,20,80,0.22)";
+
+  if (type === "round") {
+    bctx.fillStyle = pair.a;
+    for (let i = 0; i < 5; i++) {
+      const a = (i / 5) * Math.PI * 2;
+      bctx.beginPath();
+      bctx.arc(Math.cos(a) * R * 0.55, Math.sin(a) * R * 0.55, R * 0.47, 0, Math.PI * 2);
+      bctx.fill(); bctx.stroke();
+    }
+    bctx.fillStyle = pair.b;
+    bctx.beginPath(); bctx.arc(0, 0, R * 0.36, 0, Math.PI * 2); bctx.fill();
+    bctx.fillStyle = "#ffc531";
+    bctx.beginPath(); bctx.arc(0, 0, R * 0.2, 0, Math.PI * 2); bctx.fill();
+  } else if (type === "daisy") {
+    bctx.fillStyle = pair.b;
+    for (let i = 0; i < 12; i++) {
+      bctx.save();
+      bctx.rotate((i / 12) * Math.PI * 2);
+      bctx.beginPath();
+      bctx.ellipse(R * 0.62, 0, R * 0.4, R * 0.13, 0, 0, Math.PI * 2);
+      bctx.fill(); bctx.stroke();
+      bctx.restore();
+    }
+    bctx.fillStyle = "#ffc531";
+    bctx.beginPath(); bctx.arc(0, 0, R * 0.27, 0, Math.PI * 2); bctx.fill();
+  } else if (type === "sunflower") {
+    for (let i = 0; i < 14; i++) {
+      bctx.save();
+      bctx.rotate((i / 14) * Math.PI * 2);
+      bctx.fillStyle = i % 2 ? "#ffc531" : "#ff9f1c";
+      bctx.beginPath();
+      bctx.moveTo(R * 0.3, 0);
+      bctx.bezierCurveTo(R * 0.5, -R * 0.2, R * 0.85, -R * 0.15, R, 0);
+      bctx.bezierCurveTo(R * 0.85,  R * 0.15, R * 0.5,  R * 0.2, R * 0.3, 0);
+      bctx.fill(); bctx.stroke();
+      bctx.restore();
+    }
+    bctx.fillStyle = "#7a3b12";
+    bctx.beginPath(); bctx.arc(0, 0, R * 0.36, 0, Math.PI * 2); bctx.fill();
+    bctx.fillStyle = "#4a2208";
+    bctx.beginPath(); bctx.arc(0, 0, R * 0.18, 0, Math.PI * 2); bctx.fill();
+  } else {
+    bctx.fillStyle = pair.b;
+    bctx.beginPath();
+    bctx.moveTo(0, R * 0.9);
+    bctx.bezierCurveTo(-R * 0.95, R * 0.4, -R * 0.9, -R * 0.5, -R * 0.5, -R * 0.85);
+    bctx.bezierCurveTo(-R * 0.3, -R * 0.2, -R * 0.1, R * 0.3, 0, R * 0.9);
+    bctx.fill(); bctx.stroke();
+    bctx.beginPath();
+    bctx.moveTo(0, R * 0.9);
+    bctx.bezierCurveTo(R * 0.95, R * 0.4, R * 0.9, -R * 0.5, R * 0.5, -R * 0.85);
+    bctx.bezierCurveTo(R * 0.3, -R * 0.2, R * 0.1, R * 0.3, 0, R * 0.9);
+    bctx.fill(); bctx.stroke();
+    bctx.fillStyle = pair.a;
+    bctx.beginPath();
+    bctx.moveTo(0, R * 0.9);
+    bctx.bezierCurveTo(-R * 0.45, R * 0.5, -R * 0.35, -R * 0.6, 0, -R);
+    bctx.bezierCurveTo( R * 0.35, -R * 0.6,  R * 0.45, R * 0.5, 0, R * 0.9);
+    bctx.fill(); bctx.stroke();
+  }
+  bctx.restore();
+}
+
+
+/* =====================================================
+   6) FALLING PETALS
+   ===================================================== */
+const PETAL_COLORS = PAIRS.map(p => p.a);
+const PETAL_COUNT = reduceMotion ? 0 : (window.innerWidth < 600 ? 26 : 50);
+
+class Petal {
+  constructor(startAnywhere) { this.reset(startAnywhere); }
+  reset(startAnywhere) {
+    this.size  = 7 + Math.random() * 12;
+    this.x     = Math.random() * W;
+    this.y     = startAnywhere ? Math.random() * H : -30;
+    this.speed = 0.4 + Math.random() * 0.9;
+    this.sway  = 0.6 + Math.random() * 1.2;
+    this.phase = Math.random() * Math.PI * 2;
+    this.angle = Math.random() * Math.PI * 2;
+    this.spin  = (Math.random() - 0.5) * 0.03;
+    this.flip  = Math.random() * Math.PI * 2;
+    this.color = PETAL_COLORS[Math.floor(Math.random() * PETAL_COLORS.length)];
+    this.alpha = 0.55 + Math.random() * 0.4;
+  }
+  update() {
+    this.phase += 0.015; this.flip += 0.03;
+    this.y += this.speed; this.x += Math.sin(this.phase) * this.sway;
+    this.angle += this.spin;
+    if (this.y > H + 30 || this.x < -50 || this.x > W + 50) this.reset(false);
+  }
+  draw() {
+    const s = this.size;
+    ctx.save();
+    ctx.translate(this.x, this.y);
+    ctx.rotate(this.angle);
+    ctx.scale(1, Math.abs(Math.cos(this.flip)) * 0.7 + 0.3);
+    ctx.globalAlpha = this.alpha;
+    ctx.fillStyle = this.color;
+    ctx.beginPath();
+    ctx.moveTo(0, -s);
+    ctx.bezierCurveTo( s * 0.9, -s * 0.6,  s * 0.8, s * 0.6, 0, s);
+    ctx.bezierCurveTo(-s * 0.8,  s * 0.6, -s * 0.9, -s * 0.6, 0, -s);
+    ctx.fill();
+    ctx.restore();
+  }
+}
+const petals = Array.from({ length: PETAL_COUNT }, () => new Petal(true));
+
+
+/* =====================================================
+   7) FLOWER BURST TRANSITION
+   ===================================================== */
+const FLOWER_SIZE = 95;
+const POP_SPEED   = 520;
+const SPREAD_TIME = 420;
+const TOTAL = SPREAD_TIME + 100 + POP_SPEED;
+
+let flowers = [];
+let origin = { x: 0, y: 0 };
+let trans = null;
+let busy = false;
+
+function makeFlowers(ox, oy) {
+  origin = { x: ox, y: oy };
+  flowers = [];
+  const cols = Math.ceil(W / FLOWER_SIZE) + 1;
+  const rows = Math.ceil(H / FLOWER_SIZE) + 1;
+  const maxDist = Math.hypot(Math.max(ox, W - ox), Math.max(oy, H - oy)) || 1;
+
+  for (let r = 0; r < rows; r++) {
+    for (let c = 0; c < cols; c++) {
+      const tx = (c + 0.5) * FLOWER_SIZE + rand(-0.25, 0.25) * FLOWER_SIZE;
+      const ty = (r + 0.5) * FLOWER_SIZE + rand(-0.25, 0.25) * FLOWER_SIZE;
+      const dist = Math.hypot(tx - ox, ty - oy);
+      flowers.push({
+        tx, ty,
+        R: FLOWER_SIZE * rand(0.75, 1.25),
+        rot: rand(0, Math.PI * 2),
+        type: pickType(),
+        pair: pickPair(),
+        delay: (dist / maxDist) * SPREAD_TIME + rand(0, 100)
+      });
+    }
+  }
+  flowers.sort((a, b) => b.delay - a.delay);
+}
+
+function renderTransition(mode, t) {
+  const veil = mode === "in" ? clamp(t / (TOTAL * 0.85)) : 1 - clamp(t / TOTAL);
+  bctx.fillStyle = "rgba(255,232,244," + veil + ")";
+  bctx.fillRect(0, 0, W, H);
+
+  for (const f of flowers) {
+    const p = clamp((t - f.delay) / POP_SPEED);
+    if (mode === "in") {
+      if (t < f.delay) continue;
+      const m = easeOutCubic(p);
+      const x = origin.x + (f.tx - origin.x) * m;
+      const y = origin.y + (f.ty - origin.y) * m;
+      drawBloom(x, y, f.R * easeOutBack(p), f.rot + (1 - p) * -2.5, 1, f.type, f.pair);
+    } else {
+      drawBloom(f.tx, f.ty, f.R * (1 - easeInCubic(p)), f.rot + p * 1.2, 1 - p, f.type, f.pair);
+    }
+  }
+}
+
+function goToPage(id, ox, oy, afterShown) {
+  if (busy) return;
+  busy = true;
+
+  const swap = () => {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+    window.scrollTo(0, 0);
+  };
+
+  if (reduceMotion) { swap(); busy = false; if (afterShown) afterShown(); return; }
+
+  makeFlowers(ox, oy);
+  trans = {
+    mode: "in",
+    start: performance.now(),
+    done: () => {
+      swap();
+      trans = {
+        mode: "out",
+        start: performance.now() + 150,
+        done: () => { busy = false; if (afterShown) afterShown(); }
+      };
+    }
+  };
+}
+
+
+/* =====================================================
+   8) TAP POP
+   ===================================================== */
+let tapFlowers = [];
+function spawnTapBurst(x, y) {
+  const now = performance.now();
+  for (let i = 0; i < 10; i++) {
+    const a = rand(0, Math.PI * 2);
+    const s = rand(150, 330);
+    tapFlowers.push({
+      x, y,
+      vx: Math.cos(a) * s,
+      vy: Math.sin(a) * s - 120,
+      R: rand(13, 28),
+      rot: rand(0, Math.PI * 2),
+      vr: rand(-2, 2),
+      type: pickType(),
+      pair: pickPair(),
+      born: now
+    });
+  }
+}
+
+function renderTaps(now) {
+  tapFlowers = tapFlowers.filter(f => now - f.born < 1500);
+  for (const f of tapFlowers) {
+    const ts = Math.max(0, (now - f.born) / 1000);
+    const k = (1 - Math.exp(-3 * ts)) / 3;
+    const x = f.x + f.vx * k;
+    const y = f.y + f.vy * k + 0.5 * 220 * ts * ts;
+    const scale = ts < 0.35 ? easeOutBack(ts / 0.35) : 1;
+    const alpha = ts > 1 ? 1 - (ts - 1) / 0.5 : 1;
+    drawBloom(x, y, f.R * scale, f.rot + f.vr * ts, alpha, f.type, f.pair);
+  }
+}
+
+document.addEventListener("pointerdown", e => {
+  if (busy || reduceMotion) return;
+  if (e.target.closest("button") || e.target.closest("select")) return;
+  spawnTapBurst(e.clientX, e.clientY);
+});
+
+
+/* =====================================================
+   9) MAIN LOOP
+   ===================================================== */
+function master(now) {
+  ctx.clearRect(0, 0, W, H);
+  petals.forEach(p => { p.update(); p.draw(); });
+
+  bctx.clearRect(0, 0, W, H);
+  if (trans) {
+    let t = now - trans.start;
+    if (t >= TOTAL) {
+      const done = trans.done;
+      trans = null;
+      done();
+      if (trans) t = now - trans.start;
+    }
+    if (trans) renderTransition(trans.mode, t);
+  }
+  renderTaps(now);
+
+  requestAnimationFrame(master);
+}
+requestAnimationFrame(master);
+
+
+/* =====================================================
+   10) BUTTON CONTROLS & PASSCODE LOGIC
+   ===================================================== */
+function center(e) {
+  const r = e.currentTarget.getBoundingClientRect();
+  return [r.left + r.width / 2, r.top + r.height / 2];
+}
+
+document.getElementById("unlockBtn").addEventListener("click", e => {
+  const month = document.getElementById("monthSelect").value;
+  const day = document.getElementById("daySelect").value;
+  const errorMsg = document.getElementById("errorMsg");
+
+  if (!month || !day) {
+    errorMsg.textContent = "الرجاء اختيار الشهر واليوم أولاً ✨";
+    return;
+  }
+
+  if (month === "11" && day === "21") {
+    errorMsg.textContent = "";
+    const [x, y] = center(e);
+    goToPage("pageHero", x, y);
+  } else {
+    errorMsg.textContent = "حاولي مرة أخرى يا حلوة، تذكري تاريخنا الخاص (11/21) ❤️";
+  }
+});
+
+document.getElementById("openBtn").addEventListener("click", e => {
+  const [x, y] = center(e);
+  goToPage("pagePart1", x, y, () => {
+    startTypewriter("textPart1", "cursor1", "nextBtn1", TEXT_1, 65);
+  });
+});
+
+document.getElementById("nextBtn1").addEventListener("click", e => {
+  const [x, y] = center(e);
+  goToPage("pagePart2", x, y, () => {
+    startTypewriter("textPart2", "cursor2", "nextBtn2", TEXT_2, 65);
+  });
+});
+
+document.getElementById("nextBtn2").addEventListener("click", e => {
+  const [x, y] = center(e);
+  goToPage("pageFinal", x, y, () => {
+    startTypewriter("textFinal", "cursorFinal", "againBtn", TEXT_3, 65);
+  });
+});
+
+document.getElementById("againBtn").addEventListener("click", e => {
+  const [x, y] = center(e);
+  activeTypeToken++;
+  goToPage("pagePasscode", x, y);
+});
+</script>
+</body>
+</html>
